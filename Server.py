@@ -9,6 +9,7 @@ server.bind((host, port))
 server.listen()
 
 clients = []
+# global nicknames
 nicknames = []
 
 
@@ -36,6 +37,7 @@ def recieve():
     while True:
         client, address = server.accept()
         print(f"connected with {str(address)}")
+        print(nicknames)
 
         client.send("NICK".encode('ascii'))
         nickname = client.recv(1024).decode('ascii')
@@ -53,4 +55,3 @@ def recieve():
 print("Server is listening...")
 recieve()
 
-print("hi")
