@@ -2,6 +2,7 @@ import socket
 import threading
 import random
 import string
+
 # import Server
 # nickname = input("Choose a nickname: ")
 nickname = (''.join(random.choice(string.ascii_letters) for i in range(10))) + str(random.randint(0, 10000))
@@ -15,7 +16,7 @@ client.connect(('127.0.0.1', 44444))
 # print(Server.nicknames)
 
 
-def recieve():
+def receive():
     while True:
         try:
             message = client.recv(1024).decode('ascii')
@@ -26,7 +27,7 @@ def recieve():
             else:
                 print(message)
         except:
-            print('An error occured!')
+            print('An error occurred!')
             client.close()
             break
 
@@ -37,9 +38,9 @@ def write():
         client.send(message.encode('ascii'))
 
 
-recieve_threading = threading.Thread(target=recieve)
-recieve_threading.start()
+receive_threading = threading.Thread(target=receive)
+receive_threading.start()
 
 write_threading = threading.Thread(target=write)
 write_threading.start()
-#client.close()
+# client.close()
