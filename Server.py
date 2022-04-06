@@ -8,50 +8,59 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((host, port))
 server.listen()
 
-clients = []
-# global nicknames
-nicknames = []
+# Client list [(client,nickname),(client,nickname)...]
+clientlist = []
 
 
 def broadcast(message):
-    for client in clients:
-        client.send(message)
+    for tup in clientlist:
+        tup[0].send(message)
 
 
-def handel(client):
+def endClientConnection(client):
+    nickname = ''
+    for tup in clientlist:
+        if tup[0] == client:
+            nickname = tup[1]
+            clientlist.remove(tup)
+            print(nickname+" disconnected")
+
+    broadcast(f'{nickname} left the chat!'.encode('ascii'))
+
+
+def handle(client):
     while True:
         try:
             message = client.recv(1024)
-            broadcast(message)
+            broadcast(message)  # Send msg from client to other clients.
+            print(message.decode('ascii'))
+            if message.decode('ascii').split(":")[1] == " .exit":
+                endClientConnection(client)
         except:
-            index = clients.index(client)
-            client.remove(client)
-            client.close()
-            nickname = nicknames[index]
-            broadcast(f'{nickname} left the chat!'.encode('ascii'))
-            nicknames.remove(nickname)
-            break
+            e = sys.exc_info()[0]
+            print(e)
 
 
-def recieve():
+def receive():
     while True:
         client, address = server.accept()
         print(f"connected with {str(address)}")
-        print(nicknames)
 
         client.send("NICK".encode('ascii'))
         nickname = client.recv(1024).decode('ascii')
-        nicknames.append(nickname)
-        clients.append(client)
+        clientlist.append((client,nickname))
 
         print(f'Nickname of the client is {nickname}')
         broadcast(f'{nickname} joined the chat!'.encode('ascii'))
         client.send("connected to the server!".encode('ascii'))
-
-        thread = threading.Thread(target=handel, args=(client,))
+        msg = ""
+        for tup in clientlist:
+            msg = msg + ","+tup[1]
+        msg = msg + " are connected to the chat!"
+        client.send(msg.encode('ascii'))
+        thread = threading.Thread(target=handle, args=(client,))
         thread.start()
 
 
 print("Server is listening...")
-recieve()
-
+receive()
