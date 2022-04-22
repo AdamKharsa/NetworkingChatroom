@@ -1,4 +1,5 @@
 import socket
+# import ssl
 import threading
 
 host = '127.0.0.1'
@@ -8,15 +9,28 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((host, port))
 server.listen()
 
+# context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+# context.load_cert_chain(certfile="cert.pem", keyfile="key.pem")
+#
+# bindsocket = socket.socket()
+# bindsocket.bind((host, port))
+# bindsocket.listen(5)
+
 # Client list [(client,nickname),(client,nickname)...]
 clientlist = []
 
+def deal_with_client(connstream):
+    data = connstream.recv(1024)
+
+    while data:
+        print(data)
+        data = connstream.recv(1024)
 
 def broadcast(message):
     for tup in clientlist:
         tup[0].send(message)
 
-
+#
 def endClientConnection(client):
     nickname = ''
     for tup in clientlist:
@@ -61,6 +75,14 @@ def receive():
         thread = threading.Thread(target=handle, args=(client,))
         thread.start()
 
+# while True:
+#     newsocket, fromaddr = bindsocket.accept()
+#     connstream = context.wrap_socket(newsocket, server_side=True)
+#     try:
+#         deal_with_client(connstream)
+#     finally:
+#         connstream.shutdown(socket.SHUT_RDWR)
+#         connstream.close()
 
 print("Server is listening...")
 receive()
